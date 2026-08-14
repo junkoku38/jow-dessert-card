@@ -1,0 +1,8 @@
+{
+  "name": "Dessert du jour (jow)",
+  "content_in_root": true,
+  "render_readme": true,
+  "filename": "dessert-card.js",
+  "country": ["FR"],
+  "homeassistant": "2024.1.0"
+}
