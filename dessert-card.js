@@ -172,7 +172,11 @@ class DessertCard extends HTMLElement {
     this._hass = hass;
     const ent = this._config.entity;
     const s = hass.states[ent];
-    const sig = s ? `${s.state}:${s.last_updated}` : "absent";
+    // Inclure les attributs clés dans la signature pour détecter les
+    // changements d'ingrédients/covers même si le state ne change pas.
+    const sig = s
+      ? `${s.state}:${s.last_updated}:${s.attributes?.covers}:${JSON.stringify(s.attributes?.ingredients?.map(i => i.quantity) || [])}`
+      : "absent";
     if (sig === this._signature && !this._forceRender) return;
     this._signature = sig;
     this._forceRender = false;
