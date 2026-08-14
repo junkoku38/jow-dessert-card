@@ -398,12 +398,16 @@ class DessertCard extends HTMLElement {
       this._toast("✕ Erreur", true);
     } finally {
       this._occupe = false;
-      this._forceRender = true;
-      this._render();
-      // Re-render différé car le state HA peut mettre du temps à se propager
-      setTimeout(() => { this._forceRender = true; this._render(); }, 1000);
-      setTimeout(() => { this._forceRender = true; this._render(); }, 3000);
     }
+    // Re-render différé : HA propage l'état asynchronement, surtout sur mobile.
+    // On force plusieurs re-renders à intervalles croissants.
+    [500, 1500, 3000, 5000].forEach((delay) => {
+      setTimeout(() => {
+        this._forceRender = true;
+        this._signature = null;  // Forcer le re-render même si set hass n'a pas changé
+        this._render();
+      }, delay);
+    });
   }
 
   async _suggest(idx, texte) {
