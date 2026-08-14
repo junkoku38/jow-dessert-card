@@ -396,6 +396,9 @@ class DessertCard extends HTMLElement {
       this._occupe = false;
       this._forceRender = true;
       this._render();
+      // Re-render différé car le state HA peut mettre du temps à se propager
+      setTimeout(() => { this._forceRender = true; this._render(); }, 1000);
+      setTimeout(() => { this._forceRender = true; this._render(); }, 3000);
     }
   }
 
