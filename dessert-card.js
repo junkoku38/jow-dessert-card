@@ -256,14 +256,14 @@ class DessertCard extends HTMLElement {
     const sansPhoto = !photo;
 
     const chips = [];
-    if (this._config.show_calories && d.calories != null) {
+    if (this._config.show_calories && d.calories != null && d.calories > 0) {
       chips.push(`<div class="chip"><span class="v">${d.calories} kcal</span><span class="l">par part</span></div>`);
     }
     chips.push(`<div class="chip"><span class="v">${d.covers}</span><span class="l">parts</span></div>`);
-    if (d.preparation_time) {
+    if (d.preparation_time != null && d.preparation_time > 0) {
       chips.push(`<div class="chip"><span class="v">${d.preparation_time} min</span><span class="l">préparation</span></div>`);
     }
-    if (d.cooking_time) {
+    if (d.cooking_time != null && d.cooking_time > 0) {
       chips.push(`<div class="chip"><span class="v">${d.cooking_time} min</span><span class="l">cuisson</span></div>`);
     }
 
