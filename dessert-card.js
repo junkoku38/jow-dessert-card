@@ -196,7 +196,7 @@ class DessertCard extends HTMLElement {
   _esc(t) {
     const d = document.createElement("div");
     d.textContent = t == null ? "" : String(t);
-    return d.innerHTML;
+    return d.innerHTML.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
   _url(brut, imageAutorisee = false) {
@@ -403,13 +403,14 @@ class DessertCard extends HTMLElement {
     }
     // Re-render différé : HA propage l'état asynchronement, surtout sur mobile.
     // On force plusieurs re-renders à intervalles croissants.
-    [500, 1500, 3000, 5000].forEach((delay) => {
+    if (this._coversTimers) this._coversTimers.forEach((t) => clearTimeout(t));
+    this._coversTimers = [500, 1500, 3000, 5000].map((delay) =>
       setTimeout(() => {
         this._forceRender = true;
-        this._signature = null;  // Forcer le re-render même si set hass n'a pas changé
+        this._signature = null;
         this._render();
-      }, delay);
-    });
+      }, delay)
+    );
   }
 
   async _suggest(idx, texte) {
@@ -480,6 +481,12 @@ class DessertCard extends HTMLElement {
     clearTimeout(this._toastTimer);
     this._toastTimer = setTimeout(() => el.classList.remove("show"), 2500);
   }
+
+  disconnectedCallback() {
+    if (this._coversTimers) this._coversTimers.forEach((t) => clearTimeout(t));
+    this._coversTimers = null;
+    if (this._toastTimer) clearTimeout(this._toastTimer);
+  }
 }
 
 // ----------------------------------------------------------------
@@ -489,7 +496,7 @@ class DessertCard extends HTMLElement {
 class DessertCardEditor extends HTMLElement {
   constructor() { super(); this.attachShadow({ mode: "open" }); }
 
-  setConfig(config) { this._config = config; this._render(); }
+  setConfig(config) { this._config = { ...DEFAUTS, ...config }; this._render(); }
 
   _render() {
     const c = this._config || {};
@@ -535,6 +542,7 @@ class DessertCardEditor extends HTMLElement {
         this.dispatchEvent(new CustomEvent("config-changed", {
           detail: { config: this._config },
           bubbles: true,
+          composed: true,
         }));
       });
     });
@@ -543,17 +551,23 @@ class DessertCardEditor extends HTMLElement {
   _esc(t) {
     const d = document.createElement("div");
     d.textContent = t == null ? "" : String(t);
-    return d.innerHTML;
+    return d.innerHTML.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 }
 
-customElements.define("dessert-card", DessertCard);
-customElements.define("dessert-card-editor", DessertCardEditor);
+if (!customElements.get("dessert-card")) {
+  customElements.define("dessert-card", DessertCard);
+}
+if (!customElements.get("dessert-card-editor")) {
+  customElements.define("dessert-card-editor", DessertCardEditor);
+}
 
 window.customCards = window.customCards || [];
-window.customCards.push({
-  type: "dessert-card",
-  name: "Dessert du jour",
-  description: "Affiche le dessert du jour avec suggestion IA et sélecteur de parts",
-  preview: true,
-});
+if (!window.customCards.some((c) => c.type === "dessert-card")) {
+  window.customCards.push({
+    type: "dessert-card",
+    name: "Dessert du jour",
+    description: "Affiche le dessert du jour avec suggestion IA et sélecteur de parts",
+    preview: true,
+  });
+}
