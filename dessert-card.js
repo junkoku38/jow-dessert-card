@@ -436,9 +436,11 @@ class DessertCard extends HTMLElement {
     } finally {
       this._occupe = false;
       this._forceRender = true;
+      this._signature = null;
       this._render();
-      setTimeout(() => { this._forceRender = true; this._render(); }, 3000);
-      setTimeout(() => { this._forceRender = true; this._render(); }, 8000);
+      this._differe(() => { this._forceRender = true; this._signature = null; this._render(); }, 1000);
+      this._differe(() => { this._forceRender = true; this._signature = null; this._render(); }, 3000);
+      this._differe(() => { this._forceRender = true; this._signature = null; this._render(); }, 8000);
     }
   }
 
@@ -482,10 +484,22 @@ class DessertCard extends HTMLElement {
     this._toastTimer = setTimeout(() => el.classList.remove("show"), 2500);
   }
 
+  /** Diffère un re-render en stockant le timer pour nettoyage. */
+  _differe(fn, delai) {
+    if (!this._timers) this._timers = [];
+    const id = setTimeout(() => {
+      this._timers = this._timers.filter((t) => t !== id);
+      fn();
+    }, delai);
+    this._timers.push(id);
+  }
+
   disconnectedCallback() {
     if (this._coversTimers) this._coversTimers.forEach((t) => clearTimeout(t));
     this._coversTimers = null;
     if (this._toastTimer) clearTimeout(this._toastTimer);
+    if (this._timers) this._timers.forEach((t) => clearTimeout(t));
+    this._timers = null;
   }
 }
 
